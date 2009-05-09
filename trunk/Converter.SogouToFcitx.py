@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#NOT compatible with python V3.0+
 import	sys,re
 
 if len(sys.argv)<>3:
@@ -10,8 +11,9 @@ p = re.compile('([a-z]+) (.+)')
 DictName = {}
 for line in DictfileHandle.readlines():
 	m = p.match(line)
-	key = m.group(2)
-	DictName[key] = m.group(1)
+	if m:
+		key = m.group(2)
+		DictName[key] = m.group(1)
 DictfileHandle.close()
 
 InputfileHandle = open(sys.argv[1])

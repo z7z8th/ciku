@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#NOT compatible with python V3.0+
 import	re,sys
 
 if len(sys.argv)<>3:
