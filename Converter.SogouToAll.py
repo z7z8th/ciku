@@ -14,13 +14,12 @@
 import	sys,re,getopt
 
 def	usage():
-	print	'USAGE:	'+sys.argv[0]+' -t TYPE <inputfile> <outfile>'
-	print	'	TYPE	f:Convert To Fcitx Thesaurus;\n\t\tg:Convert To Google Thesaurus;\n\t\tq:Convert To QQ Thesaurus'	
+	print	'USAGE:	'+sys.argv[0]+' -t TYPE -s inputfile -d outputfile'
 	sys.exit()
 	
 def	loaddict():
 	DictfileHandle = open('gbkpy.org')
-	p = re.compile('([a-z]+) (.+)')
+	p = re.compile('^([a-z]+) ([^\r]+)([\r\n]+)')
 	Dict = {}
 	for line in DictfileHandle.readlines():
 		m = p.match(line)
@@ -36,7 +35,7 @@ def	main(argv):
 	except getopt.GetoptError:
 		usage()
 	for opt,arg in opts:
-		if opt in ('-h'):
+		if opt in ('-h','--help'):
 			usage()
 		elif opt in ('-t'):
 			type = arg
@@ -44,10 +43,13 @@ def	main(argv):
 			inputfile = arg
 		elif opt in ('-d'):
 			outputfile = arg
+		else:
+			usage()
+			sys.exit()
 	ProgressIndex = 1
 	Dict = loaddict()
 	InputfileHandle = open(inputfile)
-	OutputfileHandle = open (outputfile,'a')
+	OutputfileHandle = open (outputfile,'w')
 	for line in InputfileHandle.readlines():
 		ResultLine = ''
 		key = ''
@@ -55,22 +57,19 @@ def	main(argv):
 			if ord(c)<128:
 				if c<>'\r' and c<>'\n':
 					ResultLine = ResultLine + c
+				key = ''
 				continue
 			else:
 				key = key + c
-				if len(key)==2:
-					if Dict.has_key(key):
-						ResultLine = ResultLine + Dict[key]+'\'';
-					else:
-						print	 '\nError in Line:'+str(ProgressIndex)
-						continue
-					key=''
+				if Dict.has_key(key):
+					ResultLine = ResultLine + Dict[key]+'\'';
+				else:
+					continue
+				key = ''
 		if type=='f':
 			OutputfileHandle.write(ResultLine[0:len(ResultLine)-1]+' '+line)
 		elif type=='g':
 			OutputfileHandle.write(line[0:len(line)-1]+'\t3\t'+ResultLine[0:len(ResultLine)]+'\n')
-		elif type=='q':
-			print	'unimplemented yet'
 		else:
 			print	'TYPE ERROR\n'
 			sys.exit()
