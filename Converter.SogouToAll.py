@@ -14,7 +14,12 @@
 import	sys,re,getopt
 
 def	usage():
-	print	'USAGE:	'+sys.argv[0]+' -t TYPE -s inputfile -d outputfile'
+	print	'USAGE:	$python '+sys.argv[0]+' -t TYPE -s INPUT -d OUTPUT'
+	print	'		TYPE	f/g:Convert To Fcitx/Google Thesaurus'
+	print	'		INPUT	Filename Of Sogou Thesaurus File'
+	print	'		OUTPUT	Filename Of Output File'
+	print	'EG:	$python ',sys.argv[0],' -t f -s sogou.txt -d fcitx.txt'
+	print	'	$python ',sys.argv[0],' -t g -s sogou.txt -d google.txt'
 	sys.exit()
 	
 def	loaddict():
@@ -33,6 +38,7 @@ def	main(argv):
 	try:
 		opts,args = getopt.getopt(argv,'ht:s:d:',['help'])
 	except getopt.GetoptError:
+		print	'ERROR: Unkonwn Arguments'
 		usage()
 	for opt,arg in opts:
 		if opt in ('-h','--help'):
@@ -44,40 +50,44 @@ def	main(argv):
 		elif opt in ('-d'):
 			outputfile = arg
 		else:
+			print	'ERROR: Unkonwn Arguments'
 			usage()
-			sys.exit()
-	ProgressIndex = 1
 	Dict = loaddict()
+	if not Dict:
+		print	'ERROR:	Failed To Load gbkpy.org'
+		sys.exit()
 	InputfileHandle = open(inputfile)
 	OutputfileHandle = open (outputfile,'w')
+	ProgressIndex = 1
 	for line in InputfileHandle.readlines():
-		ResultLine = ''
+		NewLine = ''
 		key = ''
 		for c in line:
 			if ord(c)<128:
 				if c<>'\r' and c<>'\n':
-					ResultLine = ResultLine + c
+					NewLine = NewLine + c
 				key = ''
 				continue
 			else:
 				key = key + c
 				if Dict.has_key(key):
-					ResultLine = ResultLine + Dict[key]+'\'';
+					NewLine = NewLine + Dict[key]+'\'';
 				else:
 					continue
 				key = ''
 		if type=='f':
-			OutputfileHandle.write(ResultLine[0:len(ResultLine)-1]+' '+line)
+			OutputfileHandle.write(NewLine[0:len(NewLine)-1]+' '+line)
 		elif type=='g':
-			OutputfileHandle.write(line[0:len(line)-1]+'\t3\t'+ResultLine[0:len(ResultLine)]+'\n')
+			OutputfileHandle.write(line[0:len(line)-1]+'\t3\t'+NewLine[0:len(NewLine)]+'\n')
 		else:
-			print	'TYPE ERROR\n'
+			print	'TYPE ERROR.Currently Only f(Fcitx)/g(Google) Are Supported\n'
 			sys.exit()
 		if not (ProgressIndex%100):
 			sys.stdout.write('.')
 			if not (ProgressIndex % 500):
 				sys.stdout.write(str(ProgressIndex))
 		ProgressIndex = ProgressIndex + 1;
+	print	'Completed!',ProgressIndex,' items converted\n'	
 	OutputfileHandle.close()
 	InputfileHandle.close()
 
