@@ -14,12 +14,12 @@
 import	sys,re,getopt
 
 def	usage():
-	print	'USAGE:	$python '+sys.argv[0]+' -t TYPE -s INPUT -d OUTPUT'
+	print	'USAGE:	$python '+sys.argv[0]+' -t TYPE -i INPUT -o OUTPUT'
 	print	'		TYPE	f/g:Convert To Fcitx/Google Thesaurus'
 	print	'		INPUT	Filename Of Sogou Thesaurus File'
 	print	'		OUTPUT	Filename Of Output File'
-	print	'EG:	$python ',sys.argv[0],' -t f -s sogou.txt -d fcitx.txt'
-	print	'	$python ',sys.argv[0],' -t g -s sogou.txt -d google.txt'
+	print	'EG:	$python ',sys.argv[0],' -t f -i sogou.txt -o fcitx.txt'
+	print	'	$python ',sys.argv[0],' -t g -i sogou.txt -o google.txt'
 	sys.exit()
 	
 def	loaddict():
@@ -36,28 +36,34 @@ def	loaddict():
 
 def	main(argv):
 	try:
-		opts,args = getopt.getopt(argv,'ht:s:d:',['help'])
+		opts,args = getopt.getopt(argv,'ht:i:o:',['help'])
 	except getopt.GetoptError:
-		print	'ERROR: Unkonwn Arguments'
+		print	'ERROR: Unkonwn Options or Arguments'
 		usage()
 	for opt,arg in opts:
 		if opt in ('-h','--help'):
 			usage()
 		elif opt in ('-t'):
 			type = arg
-		elif opt in ('-s'):
+		elif opt in ('-i'):
 			inputfile = arg
-		elif opt in ('-d'):
+		elif opt in ('-o'):
 			outputfile = arg
 		else:
-			print	'ERROR: Unkonwn Arguments'
+			print	'ERROR: Unkonwn Options or Arguments'
 			usage()
 	Dict = loaddict()
 	if not Dict:
 		print	'ERROR:	Failed To Load gbkpy.org'
 		sys.exit()
 	InputfileHandle = open(inputfile)
-	OutputfileHandle = open (outputfile,'w')
+	if not InputfileHandle:
+		print	'ERROR:	An Error Occured When Opening File: ',inputfile
+		usage()
+	OutputfileHandle = open (outputfile,'a')
+	if not OutputfileHandle:
+		print	'ERROR:	An Error Occured When Opening File: ',Outputfile
+		usage()
 	ProgressIndex = 1
 	for line in InputfileHandle.readlines():
 		NewLine = ''
